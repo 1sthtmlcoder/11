@@ -12,36 +12,36 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Compile Mod
-      shell: pwsh
-      run: |
-        mkdir out
-        mkdir lib
-        copy BepInEx.dll lib\
-        copy UnityEngine.dll lib\
-        $xml = @"
-<Project Sdk="Microsoft.NET.Sdk">
+      - name: Compile Mod
+        shell: pwsh
+        run: |
+          mkdir out
+          mkdir lib
+          copy BepInEx.dll lib\
+          copy UnityEngine.dll lib\
+          $xml = @"
+<Project Sdk=\"Microsoft.NET.Sdk\">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BepInEx">
+    <Reference Include=\"BepInEx\">
       <HintPath>lib\BepInEx.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine">
+    <Reference Include=\"UnityEngine\">
       <HintPath>lib\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
 "@
-        $xml | Out-File -Encoding utf8 VRMenuMod.csproj
-        msbuild VRMenuMod.csproj /p:OutputPath=out
+          $xml | Out-File -Encoding utf8 VRMenuMod.csproj
+          msbuild VRMenuMod.csproj /p:OutputPath=out
 
-    - name: Upload DLL
-      uses: actions/upload-artifact@v4
-      with:
-        name: VRMenuMod
-        path: out\*.dll
+      - name: Upload DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: VRMenuMod
+          path: out\*.dll
