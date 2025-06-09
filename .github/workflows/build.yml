@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - '**.cs'
+      - 'BepInEx.dll'
+      - 'UnityEngine.dll'
 
 jobs:
   build:
@@ -12,29 +14,30 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up MSBuild
-      uses: microsoft/setup-msbuild@v1.3.1
-
     - name: Compile Mod
+      shell: pwsh
       run: |
         mkdir out
         mkdir lib
         copy BepInEx.dll lib\
         copy UnityEngine.dll lib\
-        echo ^<Project Sdk="Microsoft.NET.Sdk"^> > VRMenuMod.csproj
-        echo   ^<PropertyGroup^> >> VRMenuMod.csproj
-        echo     ^<TargetFramework^>net472^</TargetFramework^> >> VRMenuMod.csproj
-        echo     ^<OutputType^>Library^</OutputType^> >> VRMenuMod.csproj
-        echo   ^</PropertyGroup^> >> VRMenuMod.csproj
-        echo   ^<ItemGroup^> >> VRMenuMod.csproj
-        echo     ^<Reference Include="BepInEx"^> >> VRMenuMod.csproj
-        echo       ^<HintPath^>lib\BepInEx.dll^</HintPath^> >> VRMenuMod.csproj
-        echo     ^</Reference^> >> VRMenuMod.csproj
-        echo     ^<Reference Include="UnityEngine"^> >> VRMenuMod.csproj
-        echo       ^<HintPath^>lib\UnityEngine.dll^</HintPath^> >> VRMenuMod.csproj
-        echo     ^</Reference^> >> VRMenuMod.csproj
-        echo   ^</ItemGroup^> >> VRMenuMod.csproj
-        echo ^</Project^> >> VRMenuMod.csproj
+        $xml = @"
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>lib\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>lib\UnityEngine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
+"@
+        $xml | Out-File -Encoding utf8 VRMenuMod.csproj
         msbuild VRMenuMod.csproj /p:OutputPath=out
 
     - name: Upload DLL
