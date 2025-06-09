@@ -1,0 +1,44 @@
+name: Build Mod DLL
+
+on:
+  push:
+    paths:
+      - '**.cs'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up MSBuild
+      uses: microsoft/setup-msbuild@v1.3.1
+
+    - name: Compile Mod
+      run: |
+        mkdir out
+        mkdir lib
+        copy BepInEx.dll lib\
+        copy UnityEngine.dll lib\
+        echo ^<Project Sdk="Microsoft.NET.Sdk"^> > VRMenuMod.csproj
+        echo   ^<PropertyGroup^> >> VRMenuMod.csproj
+        echo     ^<TargetFramework^>net472^</TargetFramework^> >> VRMenuMod.csproj
+        echo     ^<OutputType^>Library^</OutputType^> >> VRMenuMod.csproj
+        echo   ^</PropertyGroup^> >> VRMenuMod.csproj
+        echo   ^<ItemGroup^> >> VRMenuMod.csproj
+        echo     ^<Reference Include="BepInEx"^> >> VRMenuMod.csproj
+        echo       ^<HintPath^>lib\BepInEx.dll^</HintPath^> >> VRMenuMod.csproj
+        echo     ^</Reference^> >> VRMenuMod.csproj
+        echo     ^<Reference Include="UnityEngine"^> >> VRMenuMod.csproj
+        echo       ^<HintPath^>lib\UnityEngine.dll^</HintPath^> >> VRMenuMod.csproj
+        echo     ^</Reference^> >> VRMenuMod.csproj
+        echo   ^</ItemGroup^> >> VRMenuMod.csproj
+        echo ^</Project^> >> VRMenuMod.csproj
+        msbuild VRMenuMod.csproj /p:OutputPath=out
+
+    - name: Upload DLL
+      uses: actions/upload-artifact@v3
+      with:
+        name: VRMenuMod
+        path: out\*.dll
